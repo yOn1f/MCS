@@ -3,6 +3,7 @@
 /*------------------------------------------------------------- Reading methods -------------------------------------------------------------*/
 void FA::read_from_file(const std::string& reading_path)
 {
+
 	std::ifstream my_FA(reading_path); /* opening the file and creating a input stream */
 
 	if(my_FA) /* testing if the opening of the file succeeded */
@@ -21,7 +22,7 @@ void FA::read_from_file(const std::string& reading_path)
 		fill_states(my_FA, nb_transitions);
 	}
 	else
-		std::cout << "Couldn't open the file." << std::endl;
+		throw std::string("Could not open the file.");
 }
 
 void FA::read_entry_exits(std::ifstream& fs, std::list<std::string>& l)
@@ -88,4 +89,115 @@ void FA::display() const
 	std::cout << "Transitions: " << std::endl;
 	for(auto i : states)
 		i.display_transitions();
+}
+
+
+/*------------------------------------------------------------- Verification methods -------------------------------------------------------------*/
+void FA::verifications(bool& is_async, bool& is_det, bool& is_complete) const
+{
+	/* Asynchronism test */
+	if(this->is_asynchronous())
+	{
+		std::cout << "This automaton has epsilon transitions (";
+		for(auto i : this->get_states())
+		{
+			for(auto j : i.get_transitions())
+			{
+				if(j.get_symbol() == EPSILON_SYMBOL)
+					std::cout << j << ", ";
+			}
+		}
+		std::cout << "). It is asynchronous." << std::endl;
+	}
+
+	/* Determinism test */
+	int det_or_not = this->is_deterministic();
+	if(det_or_not == MORE_THAN_ONE_ENTRY)
+	{
+		std::cout << "This automaton has more than one entry (states ";
+		for(auto i : this->get_entries())
+			std::cout << i << ", ";
+		std::cout << "). It is not deterministic." << std::endl;
+	}
+	else if(det_or_not == SEVERAL_TRANSITION_SAME_SYMBOL)
+	{
+		std::cout << "This automaton has several transitions labeled with the same symbol. It is not deterministic." << std::endl;
+		// TODO: display transitions with same symbol
+	}
+	else
+		std::cout << "This automaton is deterministic." << std::endl;
+
+	/* Completion test */
+	std::string state_nbr;
+	if(not(this->is_complete(state_nbr)))
+	{
+		std::cout << "State " << state_nbr << " doesn't have at least 1 transition by symbol in the alphabet so this FA is not complete." << std::endl;
+	}
+	else
+		std::cout << "This automaton is complete." << std::endl;
+}
+
+bool FA::is_asynchronous() const
+{
+	for(auto s : states)
+	{
+		for(auto t : s.get_transitions())
+		{
+			if(t.get_symbol() == '*')
+				return true;
+		}
+	}
+
+	return false;
+}
+
+int FA::is_deterministic() const
+{
+	if(initial_states.size() > 1)
+		return MORE_THAN_ONE_ENTRY;
+	else
+	{
+		for(auto s : states)
+		{
+			for(auto i = s.get_transitions().begin() ; i != s.get_transitions().end() ; ++i)
+			{
+				for(auto j = ++i ; j != s.get_transitions().end() ; ++j)
+				{
+					if((*i).get_origin() == j->get_origin() and (*i).get_symbol() == j->get_symbol())
+						return SEVERAL_TRANSITION_SAME_SYMBOL;
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+bool FA::is_complete(std::string& state_nbr) const
+{
+	std::vector<std::string> CS; /* CS means checked states */
+
+	for(auto s : states)
+	{
+		if(std::find(CS.begin(), CS.end(), s.get_num()) == CS.end()) /* We'll look at a state only if we haven't already */
+		{
+			std::vector<char> symbols;
+
+			for(auto i : s.get_transitions())
+			{
+				/* We look if the state has at least 1 transition labeled with eachs symbol of the alphabet */
+				if(i.get_origin() == s.get_num() and std::find(symbols.begin(), symbols.end(), i.get_symbol()) == symbols.end())
+					symbols.push_back(i.get_symbol());
+			}
+
+			if(symbols.size() != nb_symbols_alphabet)
+			{
+				state_nbr = s.get_num();
+				return false;
+			}
+
+			CS.push_back(s.get_num()); /* Current state has been checked and has at least 1 transition by symbol in the alphabet */
+		}
+	}
+
+	return true;
 }

@@ -10,6 +10,11 @@ class State {
 		void read_transitions(std::istream&, std::list<Transition>&);
 		void display_transitions();
 
+		std::string get_num() const { return state_num; }
+		bool get_entry_status() const { return is_entry; }
+		bool get_exit_status() const { return is_exit; }
+		const std::list<Transition>& get_transitions() const { return transitions; }
+
 	private:
 		std::string state_num;
 		bool is_entry;

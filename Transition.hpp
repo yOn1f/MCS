@@ -1,9 +1,7 @@
 #ifndef __TRANSITION_HPP__
 #define __TRANSITION_HPP__
 
-#include <iostream>
-#include <sstream>
-#include <list>
+#include "Utils.hpp"
 
 class Transition
 {
@@ -24,7 +22,4 @@ class Transition
 		char symbol;
 		std::string target;
 };
-
-/* Utils */
-std::string int_to_string(int);
 #endif
