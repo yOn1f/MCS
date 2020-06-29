@@ -1,6 +1,7 @@
 #ifndef __TRANSITION_HPP__
 #define __TRANSITION_HPP__
 
+#include <fstream>
 #include "Utils.hpp"
 
 class Transition
@@ -15,7 +16,7 @@ class Transition
 		char get_symbol() const {return symbol;}
 		std::string get_target() const {return target;}
 
-		friend std::ostream& operator<<(std::ostream&, const Transition);
+		friend std::ofstream& operator<<(std::ofstream&, const Transition&);
 
 	private:
 		std::string origin;

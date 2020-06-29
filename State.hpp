@@ -8,7 +8,7 @@ class State {
 		State(std::string num, bool entry = false, bool exit = false) : state_num(num), is_entry(entry), is_exit(exit) {}
 
 		void read_transitions(std::istream&, std::list<Transition>&);
-		void display_transitions();
+		void display_transitions(std::ofstream&) const;
 
 		std::string get_num() const { return state_num; }
 		bool get_entry_status() const { return is_entry; }

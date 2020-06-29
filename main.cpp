@@ -1,6 +1,6 @@
 #include "FA.hpp"
 
-// TODO: fix display in verifications()
+// TODO: fix display transitions with same symbol in determinism test
 
 int main()
 {
@@ -17,13 +17,18 @@ int main()
 
 		try
 		{
+			std::ofstream exec_file(writing_path);
 			FA.read_from_file(reading_path);
-			std::cout <<  std::endl << "Original automaton:" << std::endl;
-			FA.display();
-			std::cout << std::endl;
+
+			exec_file << "Original automaton:" << std::endl;
+			FA.display(exec_file);
+			exec_file << std::endl;
 
 			bool is_async, is_det, is_complete;
-			FA.verifications(is_async, is_det, is_complete);
+			FA.verifications(is_async, is_det, is_complete, exec_file);
+
+			exec_file.close();
+			check_result(nbr_to_test);
 		}
 		catch (std::string const& s)
 		{

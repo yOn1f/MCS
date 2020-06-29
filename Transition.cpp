@@ -1,7 +1,7 @@
 #include "Transition.hpp"
 
-std::ostream& operator<<(std::ostream& os, const Transition transition)
+std::ofstream& operator<<(std::ofstream& ofs, const Transition& transition)
 {
-	os << transition.origin << transition.symbol << transition.target;
-	return os;
+	ofs << transition.origin << transition.symbol << transition.target;
+	return ofs;
 }

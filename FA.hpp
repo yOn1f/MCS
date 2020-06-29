@@ -1,8 +1,8 @@
 #ifndef __FA_HPP__
 #define __FA_HPP__
 
-#include <fstream>
 #include "State.hpp"
+#include <typeinfo>
 
 #define NB_LINES_TO_READ_IN_FILE 6
 #define EPSILON_SYMBOL '*'
@@ -17,10 +17,10 @@ class FA {
 		void fill_states(std::ifstream&, int);
 
 		/* Displaying method */
-		void display() const;
+		void display(std::ofstream&) const;
 
 		/* Verification methods */
-		void verifications(bool&, bool&, bool&) const;
+		void verifications(bool&, bool&, bool&, std::ofstream&) const;
 		bool is_asynchronous() const;
 		int is_deterministic() const;
 		bool is_complete(std::string&) const;
@@ -28,6 +28,7 @@ class FA {
 		/* Getters */
 		std::list<std::string> get_entries() const { return initial_states; }
 		std::list<State> get_states() const { return states; }
+		// int get_nb_states() const { return nb_states; }
 	private:
 		/* Attributes */
 		int nb_symbols_alphabet;

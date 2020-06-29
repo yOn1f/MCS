@@ -14,8 +14,8 @@ void State::read_transitions(std::istream& fs, std::list<Transition>& to_match)
 	}
 }
 
-void State::display_transitions()
+void State::display_transitions(std::ofstream& exec_file) const
 {
 	for(auto i : transitions)
-		std::cout << i << std::endl;
+		exec_file << i << std::endl;
 }

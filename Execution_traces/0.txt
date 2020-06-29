@@ -1,0 +1,18 @@
+Original automaton:
+Initial states: 0 4 0
+Final states: 0 3 0
+Transitions: 
+0a1
+0a2
+0b1
+0b2
+1a2
+2*1
+3a1
+3b2
+4b3
+4a4
+
+This automaton has epsilon transitions (2*1, 2*1). It is asynchronous.
+This automaton has more than one entry (states 0, 4, 0). It is not deterministic.
+State 1 doesn't have at least 1 transition by symbol in the alphabet so this FA is not complete.
