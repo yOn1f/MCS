@@ -16,7 +16,11 @@ class Transition
 		char get_symbol() const {return symbol;}
 		std::string get_target() const {return target;}
 
-		friend std::ofstream& operator<<(std::ofstream&, const Transition&);
+		/* Setters */
+		void set_origin(const std::string& new_origin) { origin = new_origin; }
+		void set_target(const std::string& new_target) { target = new_target; }
+
+		friend std::ostream& operator<<(std::ostream&, const Transition&);
 
 	private:
 		std::string origin;

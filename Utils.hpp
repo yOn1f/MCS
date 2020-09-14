@@ -30,15 +30,20 @@ std::string join(std::list<T>& l, std::string sep)
 	std::string result;
 	typename std::list<T>::const_iterator i;
 
-	for(i = l.begin() ; i != l.end()-- ; ++i)
+	for(auto i : l)
 	{
-		result = result + *i + sep;
+		result = result + i;
+		if(i != l.back())
+			result += sep;
 	}
-
-	i++;
-	result = result + *i;
 
 	return result;
 }
 
+template <typename T>
+void operator+=(std::list<T>& lhs, const std::list<T>& rhs)
+{
+      for(auto i : rhs)
+      	lhs.push_back(i);
+}
 #endif

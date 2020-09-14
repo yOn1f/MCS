@@ -1,6 +1,6 @@
 Original automaton:
-Initial states: 1 1
-Final states: 0 1 0
+Initial states: 1
+Final states: 0 1
 Transitions: 
 0a2
 1a2
@@ -11,3 +11,5 @@ Transitions:
 4b5
 5a0
 
+This automaton is deterministic.
+State 0 doesn't have at least 1 transition by symbol in the alphabet so this FA is not complete.

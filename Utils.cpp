@@ -12,35 +12,26 @@ std::string int_to_string(int n)
 bool go_again()
 {
 	std::string again;
-	bool valid_answer = false;
 
 	do
 	{
 		std::cout << "Wanna go again? (YES/NO) ";
 		std::cin >> again;
 		std::transform(again.begin(), again.end(), again.begin(), toupper);
+		system(CLEAR);
+	}while(again != "YES" and again != "NO");
 
-		if(again == "YES")
-		{
-			valid_answer = true;
-			system(CLEAR);
-			return true;
-		}
-		else if(again == "NO")
-		{
-			valid_answer = true;
-			return false;
-		}
-		else
-			system(CLEAR);
-	}while(valid_answer == false);
+	if(again == "YES")
+		return true;
+	else
+		return false;
 }
 
 void check_result(const std::string& nbr_to_test)
 {
 	std::string check;
 
-	std::cout << "The result has been written in a .txt file. Do you want to open it? (YES/NO)";
+	std::cout << "The result has been written in a .txt file. Do you want to open it? (YES/NO) ";
 	std::cin >> check;
 
 	std::transform(check.begin(), check.end(), check.begin(), toupper);

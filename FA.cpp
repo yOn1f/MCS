@@ -36,6 +36,13 @@ void FA::read_entry_exits(std::ifstream& fs, std::list<std::string>& l)
 		fs >> state_num;
 		l.push_back(state_num);
 	}
+}
+
+void FA::fill_states(std::ifstream& my_FA, int nb_transitions)
+{
+	char origin, target;
+	char symbol;
+	std::list<Transition> to_match;
 
 	/* States are numbered from 0 to nb_states - 1 */
 	for(int i = 0 ; i < nb_states ; i++)
@@ -48,13 +55,6 @@ void FA::read_entry_exits(std::ifstream& fs, std::list<std::string>& l)
 		State *new_state = new State(num, is_entry, is_exit);
 		states.push_back(*new_state);
 	}
-}
-
-void FA::fill_states(std::ifstream& my_FA, int nb_transitions)
-{
-	char origin, target;
-	char symbol;
-	std::list<Transition> to_match;
 
 	for(int i = 0 ; i < nb_transitions ; i++)
 	{
@@ -65,7 +65,7 @@ void FA::fill_states(std::ifstream& my_FA, int nb_transitions)
 
 	std::list<State>::iterator i;
 	for(i = states.begin() ; i != states.end() ; ++i)
-		(*i).read_transitions(my_FA, to_match);
+		i->read_transitions(my_FA, to_match);
 }
 
 /*------------------------------------------------------------- Displaying method -------------------------------------------------------------*/
@@ -79,7 +79,6 @@ void FA::display(std::ofstream& exec_file) const
 	{
 		to_display.push_back(i);
 	}
-
 	exec_file << join(to_display, " ") << std::endl;
 	to_display.clear();
 
@@ -100,7 +99,6 @@ void FA::display(std::ofstream& exec_file) const
 /*------------------------------------------------------------- Verification methods -------------------------------------------------------------*/
 void FA::verifications(bool& is_async, bool& is_det, bool& is_complete, std::ofstream& exec_file) const
 {
-
 	std::list<std::string> to_display; /* List to be sent to join() for proper layout */
 
 	/* Asynchronism test */
@@ -117,8 +115,9 @@ void FA::verifications(bool& is_async, bool& is_det, bool& is_complete, std::ofs
 			}
 		}
 		exec_file << join(to_display, ", ") << "). It is asynchronous." << std::endl;
+		is_async = true;
+		to_display.clear();
 	}
-	to_display.clear();
 
 	/* Determinism test */
 	int det_or_not = this->is_deterministic();
@@ -129,22 +128,28 @@ void FA::verifications(bool& is_async, bool& is_det, bool& is_complete, std::ofs
 			to_display.push_back(i);
 
 		exec_file << join(to_display, ", ") << "). It is not deterministic." << std::endl;
+		is_det = false;	
 	}
 	else if(det_or_not == SEVERAL_TRANSITION_SAME_SYMBOL)
 	{
 		exec_file << "This automaton has several transitions labeled with the same symbol. It is not deterministic." << std::endl;
+		is_det = false;
 	}
 	else
 		exec_file << "This automaton is deterministic." << std::endl;
 
 	/* Completion test */
 	std::string state_nbr;
-	if(not(this->is_complete(state_nbr)))
+	if(!(this->is_complete(state_nbr)))
 	{
 		exec_file << "State " << state_nbr << " doesn't have at least 1 transition by symbol in the alphabet so this FA is not complete." << std::endl;
+		is_complete = false;
 	}
 	else
+	{
 		exec_file << "This automaton is complete." << std::endl;
+		is_complete = true;
+	}
 }
 
 bool FA::is_asynchronous() const
@@ -171,9 +176,9 @@ int FA::is_deterministic() const
 		{
 			for(auto i = s.get_transitions().begin() ; i != s.get_transitions().end() ; ++i)
 			{
-				for(auto j = ++i ; j != s.get_transitions().end() ; ++j)
+				for(auto j = s.get_transitions().begin() ; j != i ; ++j)
 				{
-					if((*i).get_origin() == j->get_origin() and (*i).get_symbol() == j->get_symbol())
+					if((*i).get_origin() == j->get_origin() && (*i).get_symbol() == j->get_symbol())
 						return SEVERAL_TRANSITION_SAME_SYMBOL;
 				}
 			}
@@ -195,7 +200,7 @@ bool FA::is_complete(std::string& state_nbr) const
 			for(auto i : s.get_transitions())
 			{
 				/* We look if the state has at least 1 transition labeled with eachs symbol of the alphabet */
-				if(i.get_origin() == s.get_num() and std::find(symbols.begin(), symbols.end(), i.get_symbol()) == symbols.end())
+				if(i.get_origin() == s.get_num() && std::find(symbols.begin(), symbols.end(), i.get_symbol()) == symbols.end())
 					symbols.push_back(i.get_symbol());
 			}
 
@@ -211,3 +216,56 @@ bool FA::is_complete(std::string& state_nbr) const
 
 	return true;
 }
+
+/*------------------------------------------------------------- Modification methods -------------------------------------------------------------*/
+void FA::synchronization() const
+{
+	std::list<Transition> all_epsilon_transitions; /* allows return by reference if the list */
+	this->get_all_epsilon_transitions(all_epsilon_transitions); /* is very long */
+
+	std::list<Transition> outcoming;
+	std::list<Transition>::iterator i;
+
+	for(i = all_epsilon_transitions.begin() ; i != all_epsilon_transitions.end() ; ++i)
+	{
+		// TODO: find something shorter for this->get_state_from_num(i->get_target())
+		outcoming = this->get_state_from_num(i->get_target()).get_transitions(); /* getting transitions outcoming of target state of i */
+
+		for(auto j : outcoming)
+		{
+			if((j.get_symbol() == '*') && (j.get_origin() != j.get_target())) /* don't take transitions s*s into account */
+				all_epsilon_transitions.push_back(j);
+
+			j.set_target(i->get_target());
+			std::cout << "Before call: " << this->get_state_from_num(i->get_target()).get_transitions().size() << std::endl;
+			this->get_state_from_num(i->get_target()).add_transition(j); /* adding them to the origin state of i */
+			std::cout << "After call: " << this->get_state_from_num(i->get_target()).get_transitions().size() << std::endl;
+		}
+
+		/* setting entry and exit status of the origin state */
+		this->get_state_from_num(i->get_origin()).set_entry_status(this->get_state_from_num(i->get_target()).get_entry_status());
+		this->get_state_from_num(i->get_origin()).set_exit_status(this->get_state_from_num(i->get_target()).get_exit_status());
+
+		all_epsilon_transitions.erase(i);
+	}
+}
+
+void FA::get_all_epsilon_transitions(std::list<Transition>& all_epsilon_transitions) const
+{
+	for(auto i : states)
+		all_epsilon_transitions += i.get_epsilon_transitions();
+}
+
+State FA::get_state_from_num(const std::string& state_num) const
+{
+	std::list<State>::const_iterator i = states.begin();
+	while(i->get_num() != state_num)
+		++i;
+
+	return *i;
+}
+
+// State#get_transitions() pour avoir transitions sortantes de l'état target dans la transition i
+// puis les appliquer à l'état origine de i et les ajouter à l'état en question et si epsilon ajouter à liste epsilon_transitions (1*1, 2*2 .... impossible)
+// delete * transition
+// si target = sortie alors origin = sortie et inversement

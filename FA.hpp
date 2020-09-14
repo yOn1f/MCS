@@ -25,10 +25,16 @@ class FA {
 		int is_deterministic() const;
 		bool is_complete(std::string&) const;
 
+		/* Modification methods */
+		void synchronization() const;
+		std::string& find_last_target(const std::list<Transition>&, const Transition&) const;
+
 		/* Getters */
 		std::list<std::string> get_entries() const { return initial_states; }
 		std::list<State> get_states() const { return states; }
-		// int get_nb_states() const { return nb_states; }
+		void get_all_epsilon_transitions(std::list<Transition>&) const;
+		State get_state_from_num(const std::string&) const;
+		
 	private:
 		/* Attributes */
 		int nb_symbols_alphabet;

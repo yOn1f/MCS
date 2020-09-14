@@ -1,13 +1,12 @@
 #include "FA.hpp"
 
-// TODO: fix display transitions with same symbol in determinism test
-
 int main()
 {
-	FA FA;
 	std::string nbr_to_test;
 
 	do{
+		FA FA;
+		
 		std::cout << "Which FA do you want to use? ";
 		std::cin >> nbr_to_test;
 
@@ -26,6 +25,10 @@ int main()
 
 			bool is_async, is_det, is_complete;
 			FA.verifications(is_async, is_det, is_complete, exec_file);
+			
+			FA.synchronization();
+			exec_file << std::endl;
+			FA.display(exec_file);
 
 			exec_file.close();
 			check_result(nbr_to_test);
